@@ -45,6 +45,7 @@ class ProjectController extends Controller
             'tasks' => function ($query) {
                 $query->with(['assignees:id,name,email', 'labels'])->latest();
             },
+            'files.uploader:id,name',
         ]);
 
         return \Inertia\Inertia::render('Projects/Show', [

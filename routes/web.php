@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectFileController;
 use App\Http\Controllers\TeamController;
 use App\Http\Controllers\TeamMemberController;
 use App\Http\Controllers\TaskController;
@@ -51,6 +52,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/projects/{project}/tasks', [TaskController::class, 'store'])->name('tasks.store');
     Route::patch('/tasks/{task}/status', [TaskController::class, 'updateStatus'])->name('tasks.update-status');
     Route::delete('/tasks/{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+
+
+    // Gestión de Archivos por Proyecto
+    Route::post('/projects/{project}/files', [ProjectFileController::class, 'store'])->name('project-files.store');
+    Route::get('/projects/{project}/files/{file}/download', [ProjectFileController::class, 'download'])->name('project-files.download');
+    Route::delete('/projects/{project}/files/{file}', [ProjectFileController::class, 'destroy'])->name('project-files.destroy');
 });
 
 Route::middleware('auth')->group(function () {
