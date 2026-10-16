@@ -1,6 +1,37 @@
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, Link, useForm, usePage, router } from '@inertiajs/react';
+import { useState, useEffect } from 'react';
+
+// --- Componentes SVG para reemplazar Emojis ---
+const IconChat = ({ className = "w-4 h-4" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className={className}>
+        <path fillRule="evenodd" d="M10 2c-5.523 0-10 4.059-10 9.06 0 1.764.57 3.407 1.55 4.805.15.213.23.473.18.735l-.41 2.195a.3.3 0 00.395.348l2.42-.969a.88.88 0 01.7-.024C6.442 18.72 8.167 19.12 10 19.12c5.523 0 10-4.059 10-9.06C20 6.059 15.523 2 10 2zM6.5 10c-.828 0-1.5-.672-1.5-1.5S5.672 7 6.5 7 8 7.672 8 8.5 7.328 10 6.5 10zm5 0c-.828 0-1.5-.672-1.5-1.5S10.672 7 11.5 7 13 7.672 13 8.5 12.328 10 11.5 10zm3.5 1.5c.828 0 1.5-.672 1.5-1.5S15.828 7 15 7s-1.5.672-1.5 1.5.672 1.5 1.5 1.5z" clipRule="evenodd" />
+    </svg>
+);
+
+const IconCalendar = ({ className = "w-4 h-4" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 012.25-2.25h13.5A2.25 2.25 0 0121 7.5v11.25m-18 0A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75m-18 0v-7.5A2.25 2.25 0 015.25 9h13.5A2.25 2.25 0 0121 11.25v7.5" />
+    </svg>
+);
+
+const IconTrash = ({ className = "w-4 h-4" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+    </svg>
+);
+
+const IconCrown = ({ className = "w-4 h-4" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+        <path fillRule="evenodd" d="M9 4.5a.75.75 0 01.721.544l.813 2.846a3.75 3.75 0 002.576 2.576l2.846.813a.75.75 0 010 1.442l-2.846.813a3.75 3.75 0 00-2.576 2.576l-.813 2.846a.75.75 0 01-1.442 0l-.813-2.846a3.75 3.75 0 00-2.576-2.576l-2.846-.813a.75.75 0 010-1.442l2.846-.813A3.75 3.75 0 007.466 7.89l.813-2.846A.75.75 0 019 4.5zM18 1.5a.5.5 0 01.478.362l.38 1.332a.25.25 0 00.171.171l1.332.38a.5.5 0 010 .956l-1.332.38a.25.25 0 00-.171.171l-.38 1.332a.5.5 0 01-.956 0l-.38-1.332a.25.25 0 00-.171-.171l-1.332-.38a.5.5 0 010-.956l1.332-.38a.25.25 0 00.171-.171l.38-1.332A.5.5 0 0118 1.5z" clipRule="evenodd" />
+    </svg>
+);
+
+const IconArrowLeft = ({ className = "w-4 h-4" }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+    </svg>
+);
 
 export default function Show({ team }) {
     const { auth } = usePage().props;
@@ -9,6 +40,26 @@ export default function Show({ team }) {
     // Estado de modales
     const [projectModal, setProjectModal] = useState(false);
     const [memberModal, setMemberModal] = useState(false);
+    
+    // Estado para notificaciones de chat
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    // Escuchar mensajes en tiempo real para la burbuja de notificación
+    useEffect(() => {
+        if (!window.Echo) return;
+
+        const channel = window.Echo.private(`team.${team.id}`)
+            .listen('MessageSent', (e) => {
+                if (e.message.user_id !== auth.user.id) {
+                    setUnreadCount(prev => prev + 1);
+                }
+            });
+
+        return () => {
+            channel.stopListening('MessageSent');
+            window.Echo.leave(`team.${team.id}`);
+        };
+    }, [team.id, auth.user.id]);
 
     // Formulario de Proyecto
     const projectForm = useForm({
@@ -45,25 +96,43 @@ export default function Show({ team }) {
     return (
         <AuthenticatedLayout
             header={
-                <div className="flex items-center justify-between">
+                <div className="flex flex-wrap items-center justify-between gap-4">
                     <div>
                         <h2 className="text-xl font-semibold leading-tight text-gray-800 dark:text-gray-200">
                             {team.name}
                         </h2>
                         <span className="text-xs text-gray-500">Slug: {team.slug}</span>
                     </div>
-                    <Link
-                        href={route('teams.index')}
-                        className="text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
-                    >
-                        ← Volver a Equipos
-                    </Link>
-                    <Link
-                        href={route('teams.calendar', team.slug)}
-                        className="ml-4 inline-flex items-center rounded-md border border-indigo-600 px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900"
-                    >
-                        📅 Ver Calendario
-                    </Link>
+                    <div className="flex items-center gap-3">
+                        <Link
+                            href={route('teams.index')}
+                            className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:underline dark:text-indigo-400"
+                        >
+                            <IconArrowLeft /> Volver a Equipos
+                        </Link>
+
+                        <Link
+                            href={route('teams.chat', team.slug)}
+                            onClick={() => setUnreadCount(0)}
+                            className="relative inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 dark:bg-emerald-500 dark:hover:bg-emerald-400 transition-colors"
+                        >
+                            <IconChat />
+                            Chat de Equipo
+                            
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 animate-bounce items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white shadow ring-2 ring-white dark:ring-gray-800">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            )}
+                        </Link>
+
+                        <Link
+                            href={route('teams.calendar', team.slug)}
+                            className="inline-flex items-center gap-1.5 rounded-md border border-indigo-600 px-3 py-1.5 text-xs font-medium text-indigo-600 hover:bg-indigo-50 dark:text-indigo-400 dark:hover:bg-indigo-900 transition-colors"
+                        >
+                            <IconCalendar /> Ver Calendario
+                        </Link>
+                    </div>
                 </div>
             }
         >
@@ -143,13 +212,19 @@ export default function Show({ team }) {
                             {team.members.map((member) => (
                                 <li key={member.id} className="flex items-center justify-between py-3">
                                     <div>
-                                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                                            {member.name} {member.id === team.owner_id && '👑 (Propietario)'}
-                                        </p>
+                                        <div className="flex items-center gap-1.5">
+                                            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                                                {member.name}
+                                            </p>
+                                            {member.id === team.owner_id && (
+                                                <span className="text-yellow-500" title="Propietario">
+                                                    <IconCrown />
+                                                </span>
+                                            )}
+                                        </div>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">{member.email}</p>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        {/* Si es el dueño, solo muestra el badge. Si es otro usuario y el que navega es el dueño, muestra el selector de cambio de rol */}
                                         {member.id === team.owner_id ? (
                                             <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900 dark:text-blue-200">
                                                 Propietario
@@ -177,10 +252,10 @@ export default function Show({ team }) {
                                                             });
                                                         }
                                                     }}
-                                                    className="text-xs text-red-500 hover:text-red-700 p-1"
+                                                    className="text-gray-400 hover:text-red-500 p-1 transition-colors"
                                                     title="Remover miembro"
                                                 >
-                                                    🗑️
+                                                    <IconTrash />
                                                 </button>
                                             </div>
                                         ) : (

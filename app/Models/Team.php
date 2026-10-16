@@ -32,4 +32,9 @@ class Team extends Model
     public function events(){
         return $this->hasMany(Event::class);
     }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class);
+    }
 }

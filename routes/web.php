@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectFileController;
@@ -58,6 +59,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/projects/{project}/files', [ProjectFileController::class, 'store'])->name('project-files.store');
     Route::get('/projects/{project}/files/{file}/download', [ProjectFileController::class, 'download'])->name('project-files.download');
     Route::delete('/projects/{project}/files/{file}', [ProjectFileController::class, 'destroy'])->name('project-files.destroy');
+
+
+    // Chat de Equipo
+    Route::get('/teams/{team:slug}/chat', [MessageController::class, 'index'])->name('teams.chat');
+    Route::post('/teams/{team:slug}/messages', [MessageController::class, 'store'])->name('messages.store');
 });
 
 Route::middleware('auth')->group(function () {
