@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\Task;
+use App\Models\User;
+use App\Notifications\TaskAssigned;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -33,6 +35,17 @@ class TaskController extends Controller
 
         if (!empty($validated['assignee_ids'])) {
             $task->assignees()->sync($validated['assignee_ids']);
+            // --- NUEVO CÓDIGO DE NOTIFICACIÓN ---
+            // Obtenemos los usuarios a los que se les asignó la tarea
+            $assignees = User::whereIn('id', $validated['assignee_ids'])
+                             ->where('id', '!=', $request->user()->id) // No notificarse a uno mismo
+                             ->get();
+            
+            // Enviar la notificación a cada uno
+            foreach ($assignees as $assignee) {
+                $assignee->notify(new TaskAssigned($task, $request->user()));
+            }
+            // ------------------------------------
         }
 
         return redirect()->back()->with('message', 'Tarea creada correctamente.');

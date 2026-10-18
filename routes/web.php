@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectFileController;
@@ -64,6 +65,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Chat de Equipo
     Route::get('/teams/{team:slug}/chat', [MessageController::class, 'index'])->name('teams.chat');
     Route::post('/teams/{team:slug}/messages', [MessageController::class, 'store'])->name('messages.store');
+
+    // Notificaciones
+    Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
+    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
 });
 
 Route::middleware('auth')->group(function () {

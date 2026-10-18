@@ -41,17 +41,25 @@ export default function Show({ team }) {
     const [projectModal, setProjectModal] = useState(false);
     const [memberModal, setMemberModal] = useState(false);
     
-    // Estado para notificaciones de chat
-    const [unreadCount, setUnreadCount] = useState(0);
+    // 1. Inicializamos el estado leyendo el almacenamiento local (si existe)
+    const [unreadCount, setUnreadCount] = useState(() => {
+        const savedCount = localStorage.getItem(`team_${team.id}_unread_chat`);
+        return savedCount ? parseInt(savedCount) : 0;
+    });
 
-    // Escuchar mensajes en tiempo real para la burbuja de notificación
+    // 2. Escuchamos WebSockets y actualizamos el estado Y el almacenamiento
     useEffect(() => {
         if (!window.Echo) return;
 
         const channel = window.Echo.private(`team.${team.id}`)
             .listen('MessageSent', (e) => {
                 if (e.message.user_id !== auth.user.id) {
-                    setUnreadCount(prev => prev + 1);
+                    setUnreadCount(prev => {
+                        const newCount = prev + 1;
+                        // Guardamos el nuevo valor para que sobreviva a las recargas
+                        localStorage.setItem(`team_${team.id}_unread_chat`, newCount);
+                        return newCount;
+                    });
                 }
             });
 
@@ -113,7 +121,10 @@ export default function Show({ team }) {
 
                         <Link
                             href={route('teams.chat', team.slug)}
-                            onClick={() => setUnreadCount(0)}
+                            onClick={() => {
+                                setUnreadCount(0);
+                                localStorage.setItem(`team_${team.id}_unread_chat`, 0);
+                            }}
                             className="relative inline-flex items-center gap-1.5 rounded-md bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-emerald-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 dark:bg-emerald-500 dark:hover:bg-emerald-400 transition-colors"
                         >
                             <IconChat />
