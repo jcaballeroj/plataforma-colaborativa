@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\MessageController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PrivateMessageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectFileController;
@@ -69,8 +70,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Notificaciones
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
-});
 
+    // Rutas para la Mensajería Privada
+Route::get('/chat/private/{user?}', [PrivateMessageController::class, 'index'])->name('chat.private');
+Route::post('/chat/private/{user}', [PrivateMessageController::class, 'store'])->name('chat.private.store');
+});
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');

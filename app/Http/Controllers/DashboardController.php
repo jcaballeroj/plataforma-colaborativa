@@ -27,6 +27,10 @@ class DashboardController extends Controller
                 ->latest()
                 ->take(6)
                 ->get();
+            // NUEVO: Cargar todos los equipos con sus miembros y el rol pivote
+            $allTeams = Team::with(['owner', 'members' => function($q) {
+                $q->withPivot('role');
+            }])->get();
 
             return Inertia::render('Dashboard', [
                 'role' => 'superadmin',
@@ -37,6 +41,7 @@ class DashboardController extends Controller
                     'users' => $totalUsers,
                 ],
                 'recentProjects' => $recentProjects,
+                'allTeams' => $allTeams,
             ]);
         }
 

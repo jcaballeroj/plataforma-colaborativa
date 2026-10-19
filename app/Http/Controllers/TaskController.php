@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\ProjectProgressUpdated;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
@@ -43,7 +44,7 @@ class TaskController extends Controller
             
             // Enviar la notificación a cada uno
             foreach ($assignees as $assignee) {
-                $assignee->notify(new TaskAssigned($task, $request->user()));
+                $assignee->notify(new TaskAssigned($task, $request->user(), $assignee->id));
             }
             // ------------------------------------
         }
@@ -61,6 +62,7 @@ class TaskController extends Controller
         ]);
 
         $task->update(['status' => $validated['status']]);
+        broadcast(new ProjectProgressUpdated());
 
         return redirect()->back();
     }

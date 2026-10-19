@@ -12,19 +12,23 @@ export default function AuthenticatedLayout({ header, children }) {
         useState(false);
     const { auth } = usePage().props;
     useEffect(() => {
-        if (!window.Echo || !auth.user) return;
+        if (!window.Echo || !user) return;
 
-        // Laravel transmite notificaciones al canal App.Models.User.{id}
-        const channel = window.Echo.private(`App.Models.User.${auth.user.id}`)
-            .notification((notification) => {
-                // Al recibir notificación, recarga solo los props de 'auth' en segundo plano
-                router.reload({ only: ['auth'] });
+        // Escuchamos el canal explícito y el evento explícito
+        const channel = window.Echo.private(`user.alerts.${user.id}`)
+            .listen('.Task.Assigned', (data) => {
+                console.log("🔔 Alerta en tiempo real recibida:", data);
+                router.reload({ preserveScroll: true, preserveState: true });
+            })// AÑADIMOS LA ESCUCHA DEL MENSAJE AQUÍ
+            .listen('.Message.Received', (data) => {
+                console.log("💬 Tienes un mensaje nuevo:", data);
+                router.reload({ preserveScroll: true, preserveState: true });
             });
 
         return () => {
-            window.Echo.leave(`App.Models.User.${auth.user.id}`);
+            window.Echo.leave(`user.alerts.${user.id}`);
         };
-    }, [auth.user]);
+    }, [user]);
     return (
         <div className="min-h-screen bg-gray-100">
             <nav className="border-b border-gray-100 bg-white">
@@ -46,6 +50,9 @@ export default function AuthenticatedLayout({ header, children }) {
                                 </NavLink>
                                 <NavLink href={route('teams.index')} active={route().current('teams.*')}>
                                     Equipos
+                                </NavLink>
+                                <NavLink href={route('chat.private')} active={route().current('chat.private*')}>
+                                    Mensajes
                                 </NavLink>
                             </div>
                         </div>
@@ -113,12 +120,33 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <span className="inline-flex rounded-md">
                                             <button
                                                 type="button"
-                                                className="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none"
+                                                className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 hover:text-gray-700 dark:hover:text-gray-300 focus:outline-none transition ease-in-out duration-150"
                                             >
-                                                {user.name}
+                                                {/* Foto de perfil o Inicial */}
+                                                {user.avatar ? (
+                                                    <img
+                                                        src={`/storage/${user.avatar}`}
+                                                        alt={user.name}
+                                                        className="h-8 w-8 rounded-full object-cover mr-2 border border-gray-200 dark:border-gray-700"
+                                                    />
+                                                ) : (
+                                                    <div className="h-8 w-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold mr-2 dark:bg-indigo-900/50 dark:text-indigo-400">
+                                                        {user.name.charAt(0)}
+                                                    </div>
+                                                )}
+
+                                                {/* Nombre y Cargo */}
+                                                <div className="flex flex-col text-left">
+                                                    <span className="leading-none">{user.name}</span>
+                                                    {user.job_title && (
+                                                        <span className="text-[10px] text-gray-400 mt-0.5">
+                                                            {user.job_title}
+                                                        </span>
+                                                    )}
+                                                </div>
 
                                                 <svg
-                                                    className="-me-0.5 ms-2 h-4 w-4"
+                                                    className="ml-2 -mr-0.5 h-4 w-4"
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 20 20"
                                                     fill="currentColor"

@@ -165,7 +165,8 @@ export default function Show({ project }) {
                                         </span>
                                     </div>
 
-                                    <div className="flex-1 space-y-3">
+                                    {/* CONTENEDOR CON SCROLL PARA LAS TAREAS */}
+                                    <div className="flex-1 space-y-3 overflow-y-auto min-h-0 max-h-[50vh] pr-2 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                                         {colTasks.length === 0 ? (
                                             <p className="py-8 text-center text-xs text-gray-400">No hay tareas</p>
                                         ) : (

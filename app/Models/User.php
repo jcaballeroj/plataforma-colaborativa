@@ -35,7 +35,8 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'avatar_url',
+        'avatar',
+        'job_title',
         'timezone'
     ];   
 
@@ -56,6 +57,16 @@ class User extends Authenticatable
                     ->withPivot('role')
                     ->withTimestamps();
 
+    }
+
+    public function sentPrivateMessages()
+    {
+        return $this->hasMany(PrivateMessage::class, 'sender_id');
+    }
+
+    public function receivedPrivateMessages()
+    {
+        return $this->hasMany(PrivateMessage::class, 'receiver_id');
     }
 
 

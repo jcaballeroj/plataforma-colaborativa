@@ -30,16 +30,13 @@ export default function Chat({ team, initialMessages }) {
 
     // Conexión a WebSockets con Laravel Echo
     useEffect(() => {
-        // Nos suscribimos al canal privado del equipo
         const channel = window.Echo.private(`team.${team.id}`)
             .listen('MessageSent', (e) => {
-                // Al recibir un mensaje, lo agregamos al estado actual si no es nuestro (para no duplicar)
                 if (e.message.user_id !== auth.user.id) {
                     setMessages((prevMessages) => [...prevMessages, e.message]);
                 }
             });
 
-        // Limpiar suscripción al desmontar el componente
         return () => {
             channel.stopListening('MessageSent');
             window.Echo.leave(`team.${team.id}`);
@@ -53,7 +50,6 @@ export default function Chat({ team, initialMessages }) {
         const contentTemp = data.content;
         reset('content');
 
-        // Agregamos el mensaje optimísticamente a la vista antes de que responda el servidor
         const tempMessage = {
             id: Date.now(),
             content: contentTemp,
@@ -69,7 +65,6 @@ export default function Chat({ team, initialMessages }) {
             });
         } catch (error) {
             console.error("Error enviando mensaje", error);
-            // Podrías manejar el error quitando el mensaje temporal si falla
         }
     };
 
@@ -92,11 +87,12 @@ export default function Chat({ team, initialMessages }) {
             <Head title={`Chat - ${team.name}`} />
 
             <div className="py-8 h-[calc(100vh-140px)] flex flex-col">
-                <div className="mx-auto max-w-5xl w-full px-4 sm:px-6 lg:px-8 flex-1 flex flex-col">
-                    <div className="flex-1 flex flex-col bg-white rounded-lg shadow-sm overflow-hidden dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+                {/* Se añade min-h-0 para forzar a Flexbox a respetar los límites */}
+                <div className="mx-auto max-w-5xl w-full px-4 sm:px-6 lg:px-8 flex-1 flex flex-col min-h-0">
+                    <div className="flex-1 flex flex-col bg-white rounded-lg shadow-sm overflow-hidden dark:bg-gray-800 border border-gray-200 dark:border-gray-700 min-h-0">
                         
-                        {/* ZONA DE MENSAJES */}
-                        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gray-50 dark:bg-gray-900/50">
+                        {/* ZONA DE MENSAJES: Se añade min-h-0 y las clases de personalización del scrollbar */}
+                        <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6 space-y-4 bg-gray-50 dark:bg-gray-900/50 scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
                             {messages.length === 0 ? (
                                 <div className="h-full flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
                                     No hay mensajes aún. ¡Escribe el primero!

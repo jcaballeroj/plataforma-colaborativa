@@ -33,10 +33,8 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
-                // --- Enviamos las últimas 5 notificaciones no leídas ---
-                'unreadNotifications' => $request->user() 
-                    ? $request->user()->unreadNotifications()->take(5)->get() 
-                    : [],
+                // Colocamos las notificaciones justo aquí, dentro de 'auth'
+                'unreadNotifications' => $request->user() ? $request->user()->unreadNotifications : [],
             ],
         ];
     }
