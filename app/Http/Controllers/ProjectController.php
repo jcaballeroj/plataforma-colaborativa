@@ -25,7 +25,7 @@ class ProjectController extends Controller
 
         $team->projects()->create([
             'name'=>$validate['name'],
-            'descripcion'=>$validate['descripcion'] ?? null,
+            'description'=>$validate['description'] ?? null,
             'status' => 'active',
         ]);
 
