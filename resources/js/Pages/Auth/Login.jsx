@@ -22,18 +22,21 @@ export default function Login({ status, canResetPassword }) {
     };
 
     return (
-        <GuestLayout>
-            <Head title="Log in" />
+        <GuestLayout
+            title="Entra a tu espacio"
+            subtitle="Retoma tus proyectos y tareas donde los dejaste."
+        >
+            <Head title="Iniciar sesión" />
 
             {status && (
-                <div className="mb-4 text-sm font-medium text-green-600">
+                <div className="mb-4 rounded-lg bg-indigo-50 px-3 py-2 text-sm font-medium text-indigo-800">
                     {status}
                 </div>
             )}
 
             <form onSubmit={submit}>
                 <div>
-                    <InputLabel htmlFor="email" value="Email" />
+                    <InputLabel htmlFor="email" value="Correo electrónico" />
 
                     <TextInput
                         id="email"
@@ -50,7 +53,7 @@ export default function Login({ status, canResetPassword }) {
                 </div>
 
                 <div className="mt-4">
-                    <InputLabel htmlFor="password" value="Password" />
+                    <InputLabel htmlFor="password" value="Contraseña" />
 
                     <TextInput
                         id="password"
@@ -65,7 +68,7 @@ export default function Login({ status, canResetPassword }) {
                     <InputError message={errors.password} className="mt-2" />
                 </div>
 
-                <div className="mt-4 block">
+                <div className="mt-4 flex items-center justify-between gap-4">
                     <label className="flex items-center">
                         <Checkbox
                             name="remember"
@@ -75,25 +78,33 @@ export default function Login({ status, canResetPassword }) {
                             }
                         />
                         <span className="ms-2 text-sm text-gray-600">
-                            Remember me
+                            Mantener la sesión iniciada
                         </span>
                     </label>
-                </div>
 
-                <div className="mt-4 flex items-center justify-end">
                     {canResetPassword && (
                         <Link
                             href={route('password.request')}
-                            className="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                            className="rounded text-sm font-medium text-indigo-700 hover:text-indigo-900"
                         >
-                            Forgot your password?
+                            ¿Olvidaste tu contraseña?
                         </Link>
                     )}
-
-                    <PrimaryButton className="ms-4" disabled={processing}>
-                        Log in
-                    </PrimaryButton>
                 </div>
+
+                <PrimaryButton className="mt-6 w-full" disabled={processing}>
+                    Iniciar sesión
+                </PrimaryButton>
+
+                <p className="mt-6 text-center text-sm text-gray-600">
+                    ¿Aún no tienes cuenta?{' '}
+                    <Link
+                        href={route('register')}
+                        className="rounded font-semibold text-indigo-700 hover:text-indigo-900"
+                    >
+                        Crear cuenta
+                    </Link>
+                </p>
             </form>
         </GuestLayout>
     );
