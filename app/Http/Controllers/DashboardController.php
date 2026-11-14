@@ -25,7 +25,7 @@ class DashboardController extends Controller
                     $q->where('status', 'completed');
                 }])
                 ->latest()
-                ->take(6)
+                //->take(6)
                 ->get();
             // NUEVO: Cargar todos los equipos con sus miembros y el rol pivote
             $allTeams = Team::with(['owner', 'members' => function($q) {
