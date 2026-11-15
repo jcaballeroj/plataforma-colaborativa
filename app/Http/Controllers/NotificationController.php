@@ -8,7 +8,7 @@ use Illuminate\Notifications\DatabaseNotification;
 class NotificationController extends Controller
 {
     /**
-     * Marca una notificación específica como leída y redirige a su URL.
+     * Marca una notificación específica como leída y redirige.
      */
     public function markAsRead(Request $request, $id)
     {
@@ -17,8 +17,15 @@ class NotificationController extends Controller
         
         $notification->markAsRead();
 
-        // Redirigir a la URL del proyecto que viene en la notificación, o volver atrás
-        return redirect($notification->data['url'] ?? back()->getTargetUrl());
+        // 1. Obtenemos la URL completa guardada en la base de datos
+        $fullUrl = $notification->data['url'] ?? back()->getTargetUrl();
+
+        // 2. Extraemos SOLO la ruta (ej: de "http://localhost:8000/chat/private/1" sacamos "/chat/private/1")
+        // Esto evita el error CORS sin importar desde qué dominio entres.
+        $path = parse_url($fullUrl, PHP_URL_PATH);
+
+        // 3. Devolvemos el redirect nativo que el <Link> de Inertia sí entiende perfectamente
+        return redirect($path);
     }
 
     /**

@@ -78,7 +78,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                             <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800">
                                                 <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">Notificaciones</h3>
                                                 {auth.unreadNotifications?.length > 0 && (
-                                                    <Link href={route('notifications.read-all')} method="patch" as="button" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400">
+                                                    <Link href={route('notifications.read-all')} method="post" as="button" className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400">
                                                         Marcar todo como leído
                                                     </Link>
                                                 )}

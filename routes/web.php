@@ -69,11 +69,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Notificaciones
     Route::patch('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
-    Route::patch('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.read-all');
 
     // Rutas para la Mensajería Privada
-Route::get('/chat/private/{user?}', [PrivateMessageController::class, 'index'])->name('chat.private');
-Route::post('/chat/private/{user}', [PrivateMessageController::class, 'store'])->name('chat.private.store');
+    Route::get('/chat/private/{user?}', [PrivateMessageController::class, 'index'])->name('chat.private');
+    Route::post('/chat/private/{user}', [PrivateMessageController::class, 'store'])->name('chat.private.store');
 });
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
