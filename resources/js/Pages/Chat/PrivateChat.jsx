@@ -3,26 +3,37 @@ import { Head, Link, usePage } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 
-const Avatar = ({ user, className = "h-10 w-10" }) => (
-    <div className={`${className} rounded-full bg-gray-300 dark:bg-gray-600 overflow-hidden flex items-center justify-center border border-gray-400 dark:border-gray-500 shrink-0`}>
-        {user?.avatar ? (
-            <img src={`/storage/${user.avatar}`} alt={user.name} className="h-full w-full object-cover" />
-        ) : (
-            <span className="text-gray-600 font-bold dark:text-gray-300">{user?.name?.charAt(0)}</span>
-        )}
-    </div>
-);
+const Avatar = ({ user, className = "h-10 w-10" }) => {
+    const [imageFailed, setImageFailed] = useState(false);
+
+    return (
+        <div className={`${className} rounded-full bg-gray-300 dark:bg-gray-600 overflow-hidden flex items-center justify-center border border-gray-400 dark:border-gray-500 shrink-0`}>
+            {user?.avatar && !imageFailed ? (
+                <img 
+                    src={`/storage/${user.avatar}`} 
+                    alt={user.name} 
+                    className="h-full w-full object-cover"
+                    onError={() => setImageFailed(true)} 
+                />
+            ) : (
+                <span className="text-gray-600 font-bold dark:text-gray-300 text-sm uppercase">
+                    {user?.name?.charAt(0) || '?'}
+                </span>
+            )}
+        </div>
+    );
+};
 
 export default function PrivateChat({ contacts, activeContact, messages }) {
     const authUser = usePage().props.auth.user;
     const messagesEndRef = useRef(null);
-    
+
     const [chatMessages, setChatMessages] = useState(messages || []);
     const [chatContacts, setChatContacts] = useState(contacts || []);
-    
+
     // NUEVO: Estado para el buscador de contactos
     const [searchTerm, setSearchTerm] = useState('');
-    
+
     const [content, setContent] = useState('');
     const [isSending, setIsSending] = useState(false);
 
@@ -45,7 +56,7 @@ export default function PrivateChat({ contacts, activeContact, messages }) {
 
         const channel = window.Echo.private(`private.chat.${authUser.id}`)
             .listen('.PrivateMessage.Sent', (e) => {
-                
+
                 if (activeContact && e.message.sender_id == activeContact.id) {
                     setChatMessages(prev => [...prev, e.message]);
                 }
@@ -76,7 +87,7 @@ export default function PrivateChat({ contacts, activeContact, messages }) {
 
         const textToSend = content;
         const now = new Date().toISOString();
-        setContent(''); 
+        setContent('');
         setIsSending(true);
 
         const tempMessage = {
@@ -109,7 +120,7 @@ export default function PrivateChat({ contacts, activeContact, messages }) {
     };
 
     // NUEVO: Lógica para filtrar la lista basándose en lo que escribas
-    const filteredContacts = chatContacts.filter(contact => 
+    const filteredContacts = chatContacts.filter(contact =>
         contact.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -119,13 +130,13 @@ export default function PrivateChat({ contacts, activeContact, messages }) {
             <div className="py-8 h-[calc(80vh-80px)]">
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full">
                     <div className="bg-white dark:bg-gray-800 shadow rounded-lg flex h-[80vh] overflow-hidden border dark:border-gray-700">
-                        
+
                         {/* COLUMNA IZQUIERDA: Contactos (Estilo WhatsApp) */}
                         <div className="w-1/3 border-r dark:border-gray-700 flex flex-col bg-gray-50 dark:bg-gray-900/50">
                             <div className="p-4 border-b dark:border-gray-700 bg-white dark:bg-gray-800">
                                 <h3 className="font-bold text-gray-700 dark:text-gray-200">Contactos</h3>
                             </div>
-                            
+
                             {/* NUEVO: Campo de Búsqueda */}
                             <div className="p-2 border-b dark:border-gray-700 bg-white dark:bg-gray-800">
                                 <div className="relative">
@@ -158,11 +169,10 @@ export default function PrivateChat({ contacts, activeContact, messages }) {
                                                 onClick={() => {
                                                     setChatContacts(prev => prev.map(c => c.id === contact.id ? { ...c, unread_count: 0 } : c));
                                                 }}
-                                                className={`flex items-center gap-3 p-3 rounded-lg transition-all border ${
-                                                    isActive 
-                                                    ? 'bg-gray-200 border-gray-400 dark:bg-gray-700 dark:border-gray-500 shadow-sm' 
-                                                    : 'border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'
-                                                }`}
+                                                className={`flex items-center gap-3 p-3 rounded-lg transition-all border ${isActive
+                                                        ? 'bg-gray-200 border-gray-400 dark:bg-gray-700 dark:border-gray-500 shadow-sm'
+                                                        : 'border-transparent hover:bg-gray-100 dark:hover:bg-gray-800'
+                                                    }`}
                                             >
                                                 <Avatar user={contact} />
                                                 <div className="overflow-hidden w-full">
@@ -172,7 +182,7 @@ export default function PrivateChat({ contacts, activeContact, messages }) {
                                                         </p>
                                                         {contact.last_message_time && (
                                                             <span className="text-[10px] text-gray-400 font-medium ml-2">
-                                                                {new Date(contact.last_message_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                                                                {new Date(contact.last_message_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                             </span>
                                                         )}
                                                     </div>
@@ -208,11 +218,10 @@ export default function PrivateChat({ contacts, activeContact, messages }) {
                                             const isMine = msg.sender_id === authUser.id;
                                             return (
                                                 <div key={index} className={`flex ${isMine ? 'justify-end' : 'justify-start'}`}>
-                                                    <div className={`max-w-[70%] rounded-lg p-3 text-sm shadow-sm ${
-                                                        isMine 
-                                                        ? 'bg-indigo-600 text-white rounded-br-none' 
-                                                        : 'bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-bl-none dark:text-gray-100'
-                                                    }`}>
+                                                    <div className={`max-w-[70%] rounded-lg p-3 text-sm shadow-sm ${isMine
+                                                            ? 'bg-indigo-600 text-white rounded-br-none'
+                                                            : 'bg-white dark:bg-gray-800 border dark:border-gray-700 rounded-bl-none dark:text-gray-100'
+                                                        }`}>
                                                         {msg.content}
                                                     </div>
                                                 </div>
@@ -231,9 +240,9 @@ export default function PrivateChat({ contacts, activeContact, messages }) {
                                                 className="flex-1 rounded-full border-gray-300 bg-gray-100 dark:bg-gray-900 dark:border-gray-600 dark:text-white focus:ring-indigo-500 focus:border-indigo-500 px-4"
                                                 autoComplete="off"
                                             />
-                                            <button 
-                                                type="submit" 
-                                                disabled={isSending || !content.trim()} 
+                                            <button
+                                                type="submit"
+                                                disabled={isSending || !content.trim()}
                                                 className="bg-indigo-600 hover:bg-indigo-700 transition text-white rounded-full p-2.5 flex items-center justify-center w-10 h-10 disabled:opacity-50"
                                             >
                                                 <svg className="w-5 h-5 ml-0.5" viewBox="0 0 24 24" fill="currentColor"><path d="M3.478 2.404a.75.75 0 00-.926.941l2.432 7.905H13.5a.75.75 0 010 1.5H4.984l-2.432 7.905a.75.75 0 00.926.94 60.519 60.519 0 0018.445-8.986.75.75 0 000-1.218A60.517 60.517 0 003.478 2.404z" /></svg>

@@ -11,14 +11,12 @@ const IconTeam = ({ className = "w-6 h-6" }) => <svg xmlns="http://www.w3.org/20
 export default function Dashboard(props) {
     const { role, stats, recentProjects, allTeams, myTeams, myAssignedTasks } = props;
 
-    // Escuchar actualizaciones en tiempo real solo si es superadmin
     useEffect(() => {
         if (role !== 'superadmin' || !window.Echo) return;
 
         const channel = window.Echo.private('superadmin.dashboard')
             .listen('.Progress.Updated', () => {
                 console.log("⚡ ¡Progreso actualizado en tiempo real!");
-                // Recarga silenciosa de las métricas y proyectos
                 router.reload({ only: ['stats', 'recentProjects'], preserveScroll: true });
             });
 
@@ -75,33 +73,36 @@ export default function Dashboard(props) {
                                 </div>
                             </div>
 
-                            {/* PROYECTOS EN CURSO (Se actualizan en tiempo real) */}
+                            {/* PROYECTOS EN CURSO */}
                             <div className="rounded-lg bg-white p-6 shadow dark:bg-gray-800">
                                 <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 border-b pb-3 dark:border-gray-700">
                                     Supervisión de Proyectos en Curso
                                 </h3>
-                                <div className="mt-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    {recentProjects.map((p) => {
-                                        const progress = p.tasks_count > 0 ? Math.round((p.completed_tasks_count / p.tasks_count) * 100) : 0;
-                                        return (
-                                            <Link key={p.id} href={route('projects.show', p.id)} className="block p-4 border rounded-lg hover:border-indigo-500 transition shadow-sm dark:border-gray-700">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{p.team?.name}</span>
-                                                    <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">{p.status}</span>
-                                                </div>
-                                                <h4 className="font-bold text-gray-900 dark:text-gray-100 mt-1">{p.name}</h4>
-                                                <div className="mt-3">
-                                                    <div className="flex justify-between text-xs text-gray-500 mb-1">
-                                                        <span>Progreso: {progress}%</span>
-                                                        <span>{p.completed_tasks_count} / {p.tasks_count} tareas</span>
+                                {/* NUEVO: Contenedor con altura máxima y scroll */}
+                                <div className="mt-4 max-h-[450px] overflow-y-auto pr-2">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {recentProjects.map((p) => {
+                                            const progress = p.tasks_count > 0 ? Math.round((p.completed_tasks_count / p.tasks_count) * 100) : 0;
+                                            return (
+                                                <Link key={p.id} href={route('projects.show', p.id)} className="block p-4 border rounded-lg hover:border-indigo-500 transition shadow-sm dark:border-gray-700">
+                                                    <div className="flex justify-between items-center">
+                                                        <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">{p.team?.name}</span>
+                                                        <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300">{p.status}</span>
                                                     </div>
-                                                    <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                                                        <div className="bg-indigo-600 h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
+                                                    <h4 className="font-bold text-gray-900 dark:text-gray-100 mt-1">{p.name}</h4>
+                                                    <div className="mt-3">
+                                                        <div className="flex justify-between text-xs text-gray-500 mb-1">
+                                                            <span>Progreso: {progress}%</span>
+                                                            <span>{p.completed_tasks_count} / {p.tasks_count} tareas</span>
+                                                        </div>
+                                                        <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                                                            <div className="bg-indigo-600 h-2 rounded-full transition-all duration-500" style={{ width: `${progress}%` }}></div>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </Link>
-                                        );
-                                    })}
+                                                </Link>
+                                            );
+                                        })}
+                                    </div>
                                 </div>
                             </div>
 
@@ -145,7 +146,6 @@ export default function Dashboard(props) {
                     ) : (
                         /* VISTA DEL MIEMBRO DE EQUIPO (Se mantiene intacta) */
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* ... (Tu código actual para mis tareas asignadas y mis equipos) ... */}
                             <div className="lg:col-span-2 rounded-lg bg-white p-6 shadow dark:bg-gray-800">
                                 <h3 className="text-lg font-bold text-gray-900 dark:text-gray-100 border-b pb-3 dark:border-gray-700">
                                     📌 Mis Tareas Asignadas ({myAssignedTasks?.length || 0})

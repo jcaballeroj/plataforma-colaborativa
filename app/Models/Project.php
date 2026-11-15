@@ -12,7 +12,7 @@ class Project extends Model
     protected $fillable = [
         'team_id',
         'name',
-        'description',
+        'descripcion',
         'status'
     ];
 
